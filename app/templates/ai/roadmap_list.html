@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}AI Learning Roadmaps — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4 mb-4">
+    <div class="col-lg-5">
+      <!-- Roadmap Generator Card -->
+      <div class="card p-4 p-md-5 border-0 shadow-sm h-100">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-info-subtle text-info fw-bold px-3 py-2 rounded-pill">
+            <i class="bi bi-stars me-1"></i> AI Curriculum Designer
+          </span>
+        </div>
+        <h3 class="fw-bold mb-2">Generate a Learning Roadmap</h3>
+        <p class="text-muted small mb-4">
+          Enter any skill or programming language. Our AI generates a structured 4-week step-by-step curriculum with milestones and weekly projects.
+        </p>
+
+        <form method="POST" action="{{ url_for('ai.roadmap_index') }}">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ form.skill_title.label(class="form-label fw-semibold small") }}
+            {{ form.skill_title(class="form-control" + (" is-invalid" if form.skill_title.errors else "")) }}
+            {% for error in form.skill_title.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-4">
+            {{ form.target_level.label(class="form-label fw-semibold small") }}
+            {{ form.target_level(class="form-select" + (" is-invalid" if form.target_level.errors else "")) }}
+            {% for error in form.target_level.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          {{ form.submit(class="btn btn-primary w-100 py-2 fw-semibold rounded-pill shadow-sm") }}
+        </form>
+      </div>
+    </div>
+
+    <!-- User's Existing Roadmaps -->
+    <div class="col-lg-7">
+      <div class="card p-4 border-0 shadow-sm h-100">
+        <h4 class="fw-bold mb-3">
+          <i class="bi bi-signpost-split text-primary me-2"></i> Your Learning Roadmaps ({{ roadmaps|length }})
+        </h4>
+
+        {% if roadmaps %}
+          <div class="d-flex flex-column gap-3">
+            {% for rm in roadmaps %}
+              <div class="p-3 bg-light rounded-3 border card-hover">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h5 class="fw-bold mb-0">
+                      <a href="{{ url_for('ai.roadmap_detail', roadmap_id=rm.id) }}" class="text-decoration-none text-dark">
+                        {{ rm.skill_title }}
+                      </a>
+                    </h5>
+                    <span class="badge bg-secondary-subtle text-secondary small">{{ rm.target_level }}</span>
+                  </div>
+                  <span class="badge bg-success-subtle text-success fs-6 fw-bold">
+                    {{ rm.completion_percentage }}% Completed
+                  </span>
+                </div>
+
+                <p class="text-muted small mb-3">{{ rm.summary[:140] }}...</p>
+
+                <div class="progress mb-2" style="height: 8px;">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: {{ rm.completion_percentage }}%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2">
+                  <span class="text-muted" style="font-size: 0.75rem;">Created {{ rm.created_at.strftime('%b %d, %Y') }}</span>
+                  <a href="{{ url_for('ai.roadmap_detail', roadmap_id=rm.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                    Open Interactive Roadmap <i class="bi bi-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-compass fs-1 text-secondary opacity-50 d-block mb-2"></i>
+            No roadmaps generated yet. Fill in the form on the left to create your first personalized curriculum!
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

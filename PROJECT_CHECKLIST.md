@@ -1,0 +1,22 @@
+# Project Checklist
+- [x] P1  Architecture, structure, schema design, ER, AI design, workflows (docs/ARCHITECTURE.md)
+- [x] P1  Skeleton: factory, config, extensions, requirements, .env.example, smoke tests
+- [x] P2  Models + SQLite/SQLAlchemy schema
+- [x] P3  Auth + profiles + welcome bonus credits
+- [x] P4  Marketplace (categories, skills, search, filter, offerings, wants)
+- [x] P5  AI provider architecture + settings
+- [x] P6  OpenAI BYOK + platform AI
+- [x] P7  Groq Hosted Free + Ollama + Built-in Offline Engine
+- [x] P8  AI smart matching & reciprocal scoring
+- [x] P9  AI assistant (SwapBot)
+- [x] P10 Interactive learning roadmaps + progress tracking
+- [x] P11 Skill verification quizzes + badges
+- [x] P12 Bookings + credit escrow
+- [x] P13 Wallet + time-banked ledger (1 hr = 1 cr, 30m = 0.5 cr)
+- [x] P14 Jitsi video rooms + live timer + notes
+- [x] P15 Session completion + escrow transfer + dispute handling
+- [x] P16 Reviews & ratings + notification center
+- [x] P17 Admin dashboard + user management + dispute arbitrator + demo seeder
+- [x] P18 Security (CSRF, password hash, role check, input sanitization) + full test suite (10/10 passing)
+- [x] P19 RUNNING_GUIDE.md
+- [x] P20 README.md, demo script, college viva Q&A

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}SkillSwap — AI-Powered Skill Exchange & Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Hero Section -->
+  <div class="hero-gradient p-4 p-md-5 mb-5 shadow-lg position-relative overflow-hidden">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+          <i class="bi bi-clock-history me-1"></i> Time-Based Currency • 100% Cash-Free
+        </span>
+        <h1 class="display-4 fw-extrabold mb-3 text-white tracking-tight">
+          Exchange Skills.<br>
+          <span style="color: #6ee7b7;">Zero Cash Required.</span>
+        </h1>
+        <p class="lead text-light mb-4 opacity-90">
+          Teach what you know to earn learning credits. Spend those credits with anyone in the community.
+          Powered by AI smart matching, custom roadmaps, and integrated peer video rooms.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{{ url_for('auth.register') }}" class="btn btn-warning btn-lg fw-bold px-4 py-3 shadow">
+            Join the Community <span class="badge bg-dark ms-2">+2.0 Cr Bonus</span>
+          </a>
+          <a href="{{ url_for('skills.index') }}" class="btn btn-outline-light btn-lg fw-semibold px-4 py-3">
+            <i class="bi bi-search me-1"></i> Explore Skills
+          </a>
+        </div>
+
+        <div class="mt-4 pt-3 border-top border-white border-opacity-25 d-flex gap-4 text-light small opacity-75">
+          <div><i class="bi bi-check-circle-fill text-warning me-1"></i> 1 Hr Teaching = 1 Credit</div>
+          <div><i class="bi bi-check-circle-fill text-warning me-1"></i> No Direct Barter Needed</div>
+          <div><i class="bi bi-check-circle-fill text-warning me-1"></i> AI Smart Matching</div>
+        </div>
+      </div>
+
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="card bg-white text-dark p-4 shadow-lg border-0 rounded-4">
+          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+            <span class="fw-bold text-primary"><i class="bi bi-arrow-repeat me-1"></i> How The Tri-Swap Works</span>
+            <span class="badge bg-success-subtle text-success">Active Cycle</span>
+          </div>
+
+          <div class="d-flex flex-column gap-3">
+            <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+              <div>
+                <strong>Alex</strong> teaches <span class="badge bg-primary">Python</span>
+                <div class="small text-muted">Earning +1.0 Credit from Marcus</div>
+              </div>
+              <i class="bi bi-arrow-right fs-4 text-primary"></i>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+              <div>
+                <strong>Marcus</strong> teaches <span class="badge bg-info text-dark">Excel</span>
+                <div class="small text-muted">Earning +1.0 Credit from Sarah</div>
+              </div>
+              <i class="bi bi-arrow-right fs-4 text-info"></i>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+              <div>
+                <strong>Sarah</strong> teaches <span class="badge bg-warning text-dark">Figma UI</span>
+                <div class="small text-muted">Earning +1.0 Credit from Alex</div>
+              </div>
+              <i class="bi bi-check-circle-fill fs-4 text-success"></i>
+            </div>
+          </div>
+
+          <div class="mt-3 text-center small text-muted">
+            Everyone learned what they wanted. No money spent!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Features Grid -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card h-100 p-4 border-0 card-hover">
+        <div class="avatar-circle mb-3 bg-primary-subtle text-primary">
+          <i class="bi bi-wallet2 fs-4"></i>
+        </div>
+        <h5 class="fw-bold">Time-Banked Credit Ledger</h5>
+        <p class="text-muted small">
+          Every session is backed by an automated credit escrow. When scheduled, credits are reserved; when the session completes, credits are instantly released to the tutor.
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 p-4 border-0 card-hover">
+        <div class="avatar-circle mb-3 bg-warning-subtle text-warning">
+          <i class="bi bi-bullseye fs-4"></i>
+        </div>
+        <h5 class="fw-bold">AI Reciprocal Matchmaker</h5>
+        <p class="text-muted small">
+          Our intelligent algorithm analyzes your skill wants and teaching offers to match you with peers, highlighting direct reciprocal swaps and skill-level compatibility.
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 p-4 border-0 card-hover">
+        <div class="avatar-circle mb-3 bg-success-subtle text-success">
+          <i class="bi bi-camera-video fs-4"></i>
+        </div>
+        <h5 class="fw-bold">Embedded Video Rooms</h5>
+        <p class="text-muted small">
+          Zero downloads required. Secure Jitsi Meet video rooms are generated per session with live timers, chat, and an instant completion confirmation trigger.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Browse Categories -->
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="fw-bold mb-1">Explore Popular Categories</h3>
+        <p class="text-muted small mb-0">Discover community members eager to share and learn</p>
+      </div>
+      <a href="{{ url_for('skills.index') }}" class="btn btn-outline-primary btn-sm fw-semibold">View All Skills</a>
+    </div>
+
+    <div class="row g-3">
+      {% for cat in categories %}
+        <div class="col-6 col-md-4 col-lg-2">
+          <a href="{{ url_for('skills.index', category=cat.id) }}" class="card text-center p-3 text-decoration-none text-dark card-hover h-100">
+            <i class="bi {{ cat.icon }} fs-2 text-primary mb-2"></i>
+            <h6 class="fw-semibold mb-0 small">{{ cat.name }}</h6>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Skill Offers -->
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="fw-bold mb-1">Featured Teaching Offers</h3>
+        <p class="text-muted small mb-0">Book a 1-on-1 swap session with community mentors</p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      {% for listing in recent_offers %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 p-4 border-0 card-hover">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-primary-subtle text-primary">{{ listing.skill.category.name }}</span>
+              <span class="badge bg-success-subtle text-success fw-bold">⚡ {{ listing.credit_cost }} Cr ({{ listing.session_minutes }}m)</span>
+            </div>
+            <h5 class="fw-bold mb-2">{{ listing.skill.name }}</h5>
+            <p class="text-muted small mb-3 flex-grow-1">
+              {{ listing.description[:100] }}{% if listing.description|length > 100 %}...{% endif %}
+            </p>
+
+            <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-circle" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                  {{ listing.user.username[:2].upper() }}
+                </div>
+                <div>
+                  <div class="fw-bold small">{{ listing.user.full_name }}</div>
+                  <div class="text-warning small"><i class="bi bi-star-fill"></i> {{ listing.user.average_rating }}</div>
+                </div>
+              </div>
+              <a href="{{ url_for('bookings.new', user_skill_id=listing.id) }}" class="btn btn-primary btn-sm rounded-pill px-3">
+                Swap
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="bg-light p-5 rounded-4 text-center mb-5 border">
+    <h2 class="fw-bold mb-2">Start Swapping Skills Today</h2>
+    <p class="text-muted lead max-w-lg mx-auto mb-4">
+      Join fellow students and creators. Teach what you love and unlock a world of knowledge without spending a cent.
+    </p>
+    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg fw-bold px-5 py-3 shadow">
+      Create Free Account (+2.0 Bonus Credits)
+    </a>
+  </div>
+</div>
+{% endblock %}

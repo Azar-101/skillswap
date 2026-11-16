@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Book Session with {{ teacher.full_name }} — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+      <div class="card p-4 p-md-5 border-0 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+          <div>
+            <span class="badge bg-primary-subtle text-primary mb-1">{{ listing.skill.category.name }}</span>
+            <h3 class="fw-bold mb-0">Book Swap: {{ listing.skill.name }}</h3>
+          </div>
+          <a href="{{ url_for('skills.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">Cancel</a>
+        </div>
+
+        <!-- Teacher Summary Box -->
+        <div class="p-3 bg-light rounded-3 border mb-4 d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <div class="avatar-circle" style="width: 44px; height: 44px;">
+              {{ teacher.username[:2].upper() }}
+            </div>
+            <div>
+              <div class="fw-bold">{{ teacher.full_name }}</div>
+              <div class="text-muted small">{{ listing.level }} • ⭐ {{ teacher.average_rating }} ({{ teacher.review_count }} reviews)</div>
+            </div>
+          </div>
+          <div class="text-end">
+            <span class="badge bg-success-subtle text-success fw-bold">
+              ⚡ {{ listing.credit_cost }} Cr ({{ listing.session_minutes }}m)
+            </span>
+          </div>
+        </div>
+
+        <!-- Wallet Balance Check -->
+        <div class="alert {% if wallet.available_balance >= credit_cost %}alert-info{% else %}alert-danger{% endif %} d-flex align-items-center justify-content-between mb-4">
+          <div class="small">
+            <i class="bi bi-wallet2 me-1"></i> Your Available Balance: <strong>{{ wallet.available_balance }} Credits</strong>
+          </div>
+          {% if wallet.available_balance < credit_cost %}
+            <span class="badge bg-danger">Insufficient Credits</span>
+          {% else %}
+            <span class="badge bg-success">Sufficient Credits</span>
+          {% endif %}
+        </div>
+
+        <form method="POST" action="{{ url_for('bookings.new', user_skill_id=listing.id) }}">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ form.start_time.label(class="form-label fw-semibold small") }}
+            {{ form.start_time(class="form-control" + (" is-invalid" if form.start_time.errors else "")) }}
+            {% for error in form.start_time.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+            <div class="form-text small">Select a future date and time that fits your availability.</div>
+          </div>
+
+          <div class="mb-3">
+            {{ form.duration_min.label(class="form-label fw-semibold small") }}
+            {{ form.duration_min(class="form-select" + (" is-invalid" if form.duration_min.errors else "")) }}
+            {% for error in form.duration_min.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+            <div class="form-text small">
+              Credits required: 30m = 0.5 Cr • 60m = 1.0 Cr • 90m = 1.5 Cr • 120m = 2.0 Cr.
+            </div>
+          </div>
+
+          <div class="mb-4">
+            {{ form.notes.label(class="form-label fw-semibold small") }}
+            {{ form.notes(class="form-control" + (" is-invalid" if form.notes.errors else ""), rows=3) }}
+            {% for error in form.notes.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="p-3 bg-light rounded-3 border mb-4 text-muted small">
+            <i class="bi bi-shield-check text-primary me-1"></i>
+            <strong>Credit Escrow Protection:</strong> Credits are only held in escrow once {{ teacher.full_name }} confirms your request, and will only be released to the teacher after the session concludes.
+          </div>
+
+          {{ form.submit(class="btn btn-primary w-100 py-2 fw-semibold rounded-pill shadow-sm") }}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

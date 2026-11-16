@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Admin Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <span class="badge bg-danger px-3 py-1 rounded-pill mb-1">Superuser Access</span>
+      <h2 class="fw-bold mb-0">System Administration & Oversight</h2>
+    </div>
+
+    <div class="d-flex gap-2 mt-3 mt-md-0">
+      <form method="POST" action="{{ url_for('admin.seed_data') }}" onsubmit="return confirm('Reset and re-seed sample database demo records?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
+          <i class="bi bi-database-fill-gear me-1"></i> Re-Seed Demo Data
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Metrics Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="card p-3 border-0 shadow-sm h-100">
+        <span class="text-muted small fw-semibold">Total Registered Users</span>
+        <div class="display-6 fw-bold text-dark my-1">{{ total_users }}</div>
+        <a href="{{ url_for('admin.users') }}" class="small text-primary text-decoration-none">
+          Manage Users <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card p-3 border-0 shadow-sm h-100">
+        <span class="text-muted small fw-semibold">Total Swap Sessions</span>
+        <div class="display-6 fw-bold text-primary my-1">{{ total_bookings }}</div>
+        <a href="{{ url_for('admin.bookings') }}" class="small text-primary text-decoration-none">
+          View All Sessions <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card p-3 border-0 shadow-sm h-100">
+        <span class="text-muted small fw-semibold">Open Disputes</span>
+        <div class="display-6 fw-bold {% if open_disputes > 0 %}text-danger{% else %}text-success{% endif %} my-1">
+          {{ open_disputes }}
+        </div>
+        <a href="{{ url_for('admin.disputes') }}" class="small text-danger text-decoration-none">
+          Audit Disputes <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card p-3 border-0 shadow-sm h-100">
+        <span class="text-muted small fw-semibold">Credits in Circulation</span>
+        <div class="display-6 fw-bold text-success my-1">⚡ {{ total_credits }}</div>
+        <span class="small text-muted">Across all user wallets</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Recent Users -->
+    <div class="col-lg-6">
+      <div class="card p-4 border-0 shadow-sm h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Recent User Registrations</h5>
+          <a href="{{ url_for('admin.users') }}" class="small text-primary fw-semibold text-decoration-none">View All</a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in recent_users %}
+                <tr>
+                  <td>
+                    <strong>{{ u.full_name }}</strong><br>
+                    <span class="text-muted">@{{ u.username }}</span>
+                  </td>
+                  <td><span class="badge {{ 'bg-danger' if u.role == 'admin' else 'bg-secondary-subtle text-secondary' }}">{{ u.role }}</span></td>
+                  <td><span class="badge {{ 'bg-success' if u.status == 'active' else 'bg-danger' }}">{{ u.status }}</span></td>
+                  <td class="text-muted">{{ u.created_at.strftime('%b %d') }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Sessions -->
+    <div class="col-lg-6">
+      <div class="card p-4 border-0 shadow-sm h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Recent Platform Sessions</h5>
+          <a href="{{ url_for('admin.bookings') }}" class="small text-primary fw-semibold text-decoration-none">View All</a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Skill</th>
+                <th>Participants</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in recent_bookings %}
+                <tr>
+                  <td>#{{ b.id }}</td>
+                  <td><strong>{{ b.skill.name }}</strong></td>
+                  <td>
+                    {{ b.learner.username }} → {{ b.teacher.username }}
+                  </td>
+                  <td>
+                    <span class="badge 
+                      {% if b.status == 'completed' %}bg-success
+                      {% elif b.status == 'scheduled' %}bg-primary
+                      {% elif b.status == 'disputed' %}bg-danger
+                      {% else %}bg-secondary{% endif %}">
+                      {{ b.status }}
+                    </span>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent AI Usage Logs -->
+  <div class="card p-4 border-0 shadow-sm mt-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-cpu text-info me-2"></i> Recent AI Engine Requests & Logs</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-light">
+          <tr>
+            <th>Timestamp</th>
+            <th>Feature</th>
+            <th>Provider Engine</th>
+            <th>Tokens Est.</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in recent_ai_logs %}
+            <tr>
+              <td class="text-muted">{{ log.created_at.strftime('%b %d %H:%M:%S') }}</td>
+              <td><span class="badge bg-light text-dark border">{{ log.feature }}</span></td>
+              <td><code>{{ log.provider }}</code></td>
+              <td>{{ log.tokens_used }}</td>
+              <td><span class="badge bg-success-subtle text-success">{{ log.status }}</span></td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-3">No AI request logs recorded yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

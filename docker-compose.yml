@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: skillswap_app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_DEBUG=1
+      - SECRET_KEY=skillswap-dev-secret-key-college-demo-2026
+      - DATABASE_URL=sqlite:////app/skillswap.db
+      - SIGNUP_BONUS_CREDITS=2.0
+      - JITSI_DOMAIN=meet.jit.si
+    volumes:
+      - ./skillswap.db:/app/skillswap.db
+      - ./app/static/uploads:/app/app/static/uploads
+    restart: unless-stopped

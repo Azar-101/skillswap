@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: skillswap
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app
+    envVars:
+      - key: FLASK_APP
+        value: run.py
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///skillswap.db
+      - key: SIGNUP_BONUS_CREDITS
+        value: "2.0"

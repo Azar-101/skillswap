@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Skill Quiz: {{ quiz.skill_title }} — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card p-4 p-md-5 border-0 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+          <div>
+            <span class="badge bg-success-subtle text-success mb-1">{{ quiz.difficulty }} Assessment</span>
+            <h3 class="fw-bold mb-0">{{ quiz.skill_title }} Quiz</h3>
+          </div>
+          <a href="{{ url_for('ai.quiz_index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            Exit
+          </a>
+        </div>
+
+        <form method="POST" action="{{ url_for('ai.quiz_take', quiz_id=quiz.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="d-flex flex-column gap-4 mb-4">
+            {% for q in questions %}
+              <div class="p-4 bg-light rounded-3 border">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <span class="badge bg-primary rounded-pill">Question {{ loop.index }} of {{ questions|length }}</span>
+                </div>
+                <h6 class="fw-bold text-dark mb-3">{{ q.question }}</h6>
+
+                <div class="d-flex flex-column gap-2">
+                  {% for opt in q.options %}
+                    <label class="form-check p-3 bg-white rounded-3 border d-flex align-items-center gap-3 cursor-pointer">
+                      <input class="form-check-input mt-0" type="radio" name="q_{{ q.id }}" value="{{ loop.index0 }}" required>
+                      <span class="small fw-semibold text-dark">{{ opt }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <button type="submit" class="btn btn-success btn-lg w-100 rounded-pill fw-bold shadow-sm py-3">
+            <i class="bi bi-send-check me-2"></i> Submit Answers & Calculate Score
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

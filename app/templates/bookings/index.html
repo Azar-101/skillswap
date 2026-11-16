@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}My Sessions — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">My Swap Sessions</h2>
+      <p class="text-muted small mb-0">Track all your past, present, and scheduled skill exchange sessions.</p>
+    </div>
+    <a href="{{ url_for('skills.index') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+      <i class="bi bi-search me-1"></i> Find Skills to Learn
+    </a>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <ul class="nav nav-pills mb-4 gap-2">
+    <li class="nav-item">
+      <a class="nav-link rounded-pill px-4 fw-semibold {{ 'active' if active_tab == 'learning' else 'bg-light text-secondary' }}" href="{{ url_for('bookings.index', tab='learning') }}">
+        <i class="bi bi-lightbulb me-1"></i> As Learner ({{ learning_bookings|length }})
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link rounded-pill px-4 fw-semibold {{ 'active' if active_tab == 'teaching' else 'bg-light text-secondary' }}" href="{{ url_for('bookings.index', tab='teaching') }}">
+        <i class="bi bi-mortarboard me-1"></i> As Teacher ({{ teaching_bookings|length }})
+      </a>
+    </li>
+  </ul>
+
+  <!-- Tab Content: As Learner -->
+  {% if active_tab == 'learning' %}
+    {% if learning_bookings %}
+      <div class="d-flex flex-column gap-3">
+        {% for b in learning_bookings %}
+          <div class="card p-4 border-0 shadow-sm card-hover">
+            <div class="row align-items-center gy-3">
+              <div class="col-md-5">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <h5 class="fw-bold mb-0">{{ b.skill.name }}</h5>
+                  <span class="badge 
+                    {% if b.status == 'completed' %}bg-success
+                    {% elif b.status == 'scheduled' %}bg-primary
+                    {% elif b.status == 'pending' %}bg-warning text-dark
+                    {% elif b.status == 'in_progress' %}bg-info text-dark
+                    {% elif b.status == 'disputed' %}bg-danger
+                    {% else %}bg-secondary{% endif %} rounded-pill small">
+                    {{ b.status.title() }}
+                  </span>
+                </div>
+                <div class="text-muted small">
+                  Taught by <strong>{{ b.teacher.full_name }}</strong> (@{{ b.teacher.username }})
+                </div>
+                <div class="text-secondary small mt-1">
+                  <i class="bi bi-clock me-1 text-primary"></i> {{ b.start_utc.strftime('%a, %b %d, %Y at %H:%M UTC') }} ({{ b.duration_min }} mins)
+                </div>
+              </div>
+
+              <div class="col-md-3 text-md-center">
+                <span class="badge bg-light text-dark border px-3 py-2 fw-semibold">
+                  ⚡ {{ b.credits }} Credits Escrow
+                </span>
+              </div>
+
+              <div class="col-md-4 text-md-end d-flex flex-wrap justify-content-md-end gap-2">
+                <a href="{{ url_for('bookings.detail', booking_id=b.id) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                  Details
+                </a>
+
+                {% if b.status in ('scheduled', 'in_progress') %}
+                  <a href="{{ url_for('video.room', room_id=b.room_id) }}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-camera-video me-1"></i> Video Room
+                  </a>
+                {% endif %}
+
+                {% if b.status == 'completed' and not b.reviews %}
+                  <a href="{{ url_for('reviews.new', booking_id=b.id) }}" class="btn btn-outline-warning text-dark btn-sm rounded-pill px-3">
+                    <i class="bi bi-star me-1"></i> Leave Review
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card p-5 text-center border-0 shadow-sm">
+        <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+        <h4 class="fw-bold">No learning sessions yet</h4>
+        <p class="text-muted small max-w-sm mx-auto mb-4">You haven't requested any swap sessions as a learner.</p>
+        <div>
+          <a href="{{ url_for('skills.index') }}" class="btn btn-primary rounded-pill px-4">Browse Available Teachers</a>
+        </div>
+      </div>
+    {% endif %}
+  {% else %}
+    <!-- Tab Content: As Teacher -->
+    {% if teaching_bookings %}
+      <div class="d-flex flex-column gap-3">
+        {% for b in teaching_bookings %}
+          <div class="card p-4 border-0 shadow-sm card-hover">
+            <div class="row align-items-center gy-3">
+              <div class="col-md-5">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <h5 class="fw-bold mb-0">{{ b.skill.name }}</h5>
+                  <span class="badge 
+                    {% if b.status == 'completed' %}bg-success
+                    {% elif b.status == 'scheduled' %}bg-primary
+                    {% elif b.status == 'pending' %}bg-warning text-dark
+                    {% elif b.status == 'in_progress' %}bg-info text-dark
+                    {% elif b.status == 'disputed' %}bg-danger
+                    {% else %}bg-secondary{% endif %} rounded-pill small">
+                    {{ b.status.title() }}
+                  </span>
+                </div>
+                <div class="text-muted small">
+                  Student: <strong>{{ b.learner.full_name }}</strong> (@{{ b.learner.username }})
+                </div>
+                <div class="text-secondary small mt-1">
+                  <i class="bi bi-clock me-1 text-primary"></i> {{ b.start_utc.strftime('%a, %b %d, %Y at %H:%M UTC') }} ({{ b.duration_min }} mins)
+                </div>
+              </div>
+
+              <div class="col-md-3 text-md-center">
+                <span class="badge bg-success-subtle text-success border px-3 py-2 fw-semibold">
+                  ⚡ +{{ b.credits }} Credits to Earn
+                </span>
+              </div>
+
+              <div class="col-md-4 text-md-end d-flex flex-wrap justify-content-md-end gap-2">
+                <a href="{{ url_for('bookings.detail', booking_id=b.id) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                  Details
+                </a>
+
+                {% if b.status == 'pending' %}
+                  <form method="POST" action="{{ url_for('bookings.accept', booking_id=b.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">Accept</button>
+                  </form>
+                  <form method="POST" action="{{ url_for('bookings.reject', booking_id=b.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">Decline</button>
+                  </form>
+                {% elif b.status in ('scheduled', 'in_progress') %}
+                  <a href="{{ url_for('video.room', room_id=b.room_id) }}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-camera-video me-1"></i> Video Room
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card p-5 text-center border-0 shadow-sm">
+        <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+        <h4 class="fw-bold">No teaching sessions yet</h4>
+        <p class="text-muted small max-w-sm mx-auto mb-4">List skills you can teach so learners can request sessions with you!</p>
+        <div>
+          <a href="{{ url_for('skills.new') }}" class="btn btn-primary rounded-pill px-4">Offer a Skill to Teach</a>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

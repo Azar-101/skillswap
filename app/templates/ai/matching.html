@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}AI Smart Matchmaker — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card p-4 p-md-5 border-0 shadow-sm mb-4">
+    <div class="row align-items-center gy-3">
+      <div class="col-lg-8">
+        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-2">
+          <i class="bi bi-stars me-1"></i> Intelligent Peer Matching Engine
+        </span>
+        <h2 class="fw-bold mb-1">AI Reciprocal Skill Matchmaker</h2>
+        <p class="text-muted small mb-0">
+          We score community peers against your wanted learning goals, rating history, level fit, and reciprocal swap opportunities.
+        </p>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <a href="{{ url_for('skills.new') }}" class="btn btn-outline-primary rounded-pill px-3">
+          <i class="bi bi-pencil me-1"></i> Update Your Learning Wants
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% if matches %}
+    <div class="row g-4">
+      {% for match in matches %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 p-4 border-0 shadow-sm card-hover d-flex flex-column">
+            <!-- Header Score -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill shadow-sm">
+                <i class="bi bi-bullseye me-1"></i> {{ match.score }}% Fit
+              </span>
+              {% if match.has_reciprocal %}
+                <span class="badge bg-success-subtle text-success border border-success fw-bold px-2 py-1">
+                  ⚡ Reciprocal Match!
+                </span>
+              {% endif %}
+            </div>
+
+            <!-- Skill info -->
+            <h5 class="fw-bold mb-1 text-dark">{{ match.skill.name }}</h5>
+            <div class="text-muted small mb-3">
+              {{ match.skill.category.name }} • <span class="badge bg-light text-secondary border">{{ match.user_skill.level }}</span>
+            </div>
+
+            <!-- Mentor info -->
+            <div class="p-3 bg-light rounded-3 border mb-3">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="avatar-circle" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                  {{ match.teacher.username[:2].upper() }}
+                </div>
+                <div>
+                  <a href="{{ url_for('auth.profile', username=match.teacher.username) }}" class="fw-bold small text-decoration-none text-dark">
+                    {{ match.teacher.full_name }}
+                  </a>
+                  <div class="text-warning small" style="font-size: 0.75rem;">
+                    <i class="bi bi-star-fill"></i> {{ match.teacher.average_rating }} ({{ match.teacher.review_count }} reviews)
+                  </div>
+                </div>
+              </div>
+              {% if match.teacher.headline %}
+                <div class="text-muted small fst-italic mt-1" style="font-size: 0.8rem;">"{{ match.teacher.headline }}"</div>
+              {% endif %}
+            </div>
+
+            <!-- AI Reason Breakdown -->
+            <div class="mb-4 flex-grow-1">
+              <div class="fw-bold text-secondary small mb-1">
+                <i class="bi bi-robot text-primary me-1"></i> Why this match:
+              </div>
+              <p class="text-muted small mb-0" style="font-size: 0.85rem; line-height: 1.5;">
+                {{ match.explanation }}
+              </p>
+            </div>
+
+            <!-- Booking CTA -->
+            <div class="pt-3 border-top mt-auto">
+              <a href="{{ url_for('bookings.new', user_skill_id=match.user_skill.id) }}" class="btn btn-primary w-100 rounded-pill fw-semibold shadow-sm">
+                Request Session ({{ match.user_skill.credit_cost }} Cr)
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card p-5 text-center border-0 shadow-sm">
+      <i class="bi bi-search fs-1 text-muted mb-3"></i>
+      <h4 class="fw-bold">No active matches found</h4>
+      <p class="text-muted small max-w-sm mx-auto mb-4">
+        To get personalized match recommendations, add skills you want to learn to your profile.
+      </p>
+      <div>
+        <a href="{{ url_for('skills.new') }}" class="btn btn-primary rounded-pill px-4">
+          Add Learning Wants
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

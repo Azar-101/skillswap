@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}AI Skill Quizzes — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4 mb-4">
+    <!-- Generator Form -->
+    <div class="col-lg-5">
+      <div class="card p-4 p-md-5 border-0 shadow-sm h-100">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-success-subtle text-success fw-bold px-3 py-2 rounded-pill">
+            <i class="bi bi-stars me-1"></i> AI Skill Assessment
+          </span>
+        </div>
+        <h3 class="fw-bold mb-2">Create a Skill Quiz</h3>
+        <p class="text-muted small mb-4">
+          Generate an instant 5-question assessment on any topic to verify your competence before teaching or to test your learning progress.
+        </p>
+
+        <form method="POST" action="{{ url_for('ai.quiz_index') }}">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ form.skill_title.label(class="form-label fw-semibold small") }}
+            {{ form.skill_title(class="form-control" + (" is-invalid" if form.skill_title.errors else "")) }}
+            {% for error in form.skill_title.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-4">
+            {{ form.difficulty.label(class="form-label fw-semibold small") }}
+            {{ form.difficulty(class="form-select" + (" is-invalid" if form.difficulty.errors else "")) }}
+            {% for error in form.difficulty.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          {{ form.submit(class="btn btn-success w-100 py-2 fw-semibold rounded-pill shadow-sm") }}
+        </form>
+      </div>
+    </div>
+
+    <!-- User Quizzes & Attempts -->
+    <div class="col-lg-7">
+      <div class="card p-4 border-0 shadow-sm h-100">
+        <h4 class="fw-bold mb-3">
+          <i class="bi bi-patch-check text-success me-2"></i> Your Quizzes & Badges ({{ quizzes|length }})
+        </h4>
+
+        {% if quizzes %}
+          <div class="d-flex flex-column gap-3">
+            {% for q in quizzes %}
+              <div class="p-3 bg-light rounded-3 border card-hover">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h5 class="fw-bold mb-0 text-dark">{{ q.skill_title }}</h5>
+                    <span class="badge bg-secondary-subtle text-secondary small">{{ q.difficulty }}</span>
+                  </div>
+
+                  {% set latest = q.attempts[0] if q.attempts else none %}
+                  {% if latest %}
+                    {% if latest.passed %}
+                      <span class="badge bg-success-subtle text-success fs-6 fw-bold">
+                        <i class="bi bi-patch-check-fill me-1"></i> Passed ({{ latest.score }}/{{ latest.total_questions }})
+                      </span>
+                    {% else %}
+                      <span class="badge bg-warning-subtle text-dark fs-6 fw-bold">
+                        Score: {{ latest.score }}/{{ latest.total_questions }}
+                      </span>
+                    {% endif %}
+                  {% else %}
+                    <span class="badge bg-light text-secondary border">Not Attempted</span>
+                  {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2 mt-2 border-top">
+                  <span class="text-muted" style="font-size: 0.75rem;">Created {{ q.created_at.strftime('%b %d, %Y') }}</span>
+                  <div class="d-flex gap-2">
+                    {% if latest %}
+                      <a href="{{ url_for('ai.quiz_take', quiz_id=q.id, view_result=1) }}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                        View Review
+                      </a>
+                    {% endif %}
+                    <a href="{{ url_for('ai.quiz_take', quiz_id=q.id) }}" class="btn btn-sm btn-primary rounded-pill px-3">
+                      {% if latest %}Retake Quiz{% else %}Take Quiz{% endif %}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-award fs-1 text-secondary opacity-50 d-block mb-2"></i>
+            No quizzes generated yet. Generate your first skill test on the left!
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

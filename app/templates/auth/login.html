@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card p-4 p-md-5 border-0 shadow">
+        <div class="text-center mb-4">
+          <div class="avatar-circle mx-auto mb-3 bg-primary-subtle text-primary" style="width: 56px; height: 56px;">
+            <i class="bi bi-box-arrow-in-right fs-3"></i>
+          </div>
+          <h3 class="fw-bold mb-1">Welcome Back</h3>
+          <p class="text-muted small">Sign in to manage your swaps and credits</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ form.email.label(class="form-label fw-semibold small") }}
+            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com") }}
+            {% for error in form.email.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              {{ form.password.label(class="form-label fw-semibold small mb-0") }}
+            </div>
+            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••") }}
+            {% for error in form.password.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-4 form-check">
+            {{ form.remember_me(class="form-check-input") }}
+            {{ form.remember_me.label(class="form-check-label small text-muted") }}
+          </div>
+
+          {{ form.submit(class="btn btn-primary w-100 py-2 fw-semibold shadow-sm") }}
+        </form>
+
+        <div class="text-center mt-4 pt-3 border-top small text-muted">
+          Don't have an account? <a href="{{ url_for('auth.register') }}" class="fw-semibold text-primary">Sign up (+2.0 Free Credits)</a>
+        </div>
+
+        <!-- Quick Demo Accounts for College Reviewer -->
+        <div class="mt-4 p-3 bg-light rounded-3 border">
+          <div class="fw-bold small text-secondary mb-2 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-person-badge text-primary me-1"></i> Quick Demo Logins:</span>
+            <span class="badge bg-secondary-subtle text-secondary small">Click to Auto-Fill</span>
+          </div>
+          <div class="d-flex flex-column gap-2 small">
+            <button type="button" class="btn btn-outline-primary btn-sm text-start py-1 px-2 demo-autofill" 
+              data-user="alex@skillswap.com" data-pass="UserPass123!">
+              <strong>Alex (Tutor):</strong> <code>alex@skillswap.com</code>
+            </button>
+            <button type="button" class="btn btn-outline-info btn-sm text-start py-1 px-2 demo-autofill text-dark" 
+              data-user="sarah@skillswap.com" data-pass="UserPass123!">
+              <strong>Sarah (Designer):</strong> <code>sarah@skillswap.com</code>
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm text-start py-1 px-2 demo-autofill text-dark" 
+              data-user="admin@skillswap.com" data-pass="AdminPass123!">
+              <strong>Admin (Moderator):</strong> <code>admin@skillswap.com</code>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const emailInput = document.querySelector('input[name="email"]');
+    const passwordInput = document.querySelector('input[name="password"]');
+    document.querySelectorAll(".demo-autofill").forEach(btn => {
+      btn.addEventListener("click", function() {
+        if (emailInput && passwordInput) {
+          emailInput.value = this.getAttribute("data-user");
+          passwordInput.value = this.getAttribute("data-pass");
+          emailInput.classList.remove("is-invalid");
+          const feedback = emailInput.parentNode.querySelector(".invalid-feedback");
+          if (feedback) feedback.style.display = "none";
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

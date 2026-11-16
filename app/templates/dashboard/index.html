@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Welcome Banner -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <h2 class="fw-bold mb-1">Welcome back, {{ current_user.full_name.split()[0] }} 👋</h2>
+      <p class="text-muted small mb-0">Here is your skill exchange activity, upcoming sessions, and smart recommendations.</p>
+    </div>
+    <div class="d-flex gap-2 mt-3 mt-md-0">
+      <a href="{{ url_for('skills.new') }}" class="btn btn-outline-primary rounded-pill px-3 fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Add Skill
+      </a>
+      <a href="{{ url_for('skills.index') }}" class="btn btn-primary rounded-pill px-3 fw-semibold">
+        <i class="bi bi-search me-1"></i> Browse Skills
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="card p-3 border-0 shadow-sm h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-semibold">Available Credits</span>
+          <div class="avatar-circle bg-success-subtle text-success" style="width: 36px; height: 36px;">
+            <i class="bi bi-lightning-charge-fill fs-5"></i>
+          </div>
+        </div>
+        <div class="display-6 fw-bold text-success mb-1">⚡ {{ wallet.available_balance }}</div>
+        <a href="{{ url_for('wallet.index') }}" class="text-decoration-none small text-muted">
+          View Ledger <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card p-3 border-0 shadow-sm h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-semibold">In Escrow</span>
+          <div class="avatar-circle bg-warning-subtle text-warning" style="width: 36px; height: 36px;">
+            <i class="bi bi-shield-lock-fill fs-5"></i>
+          </div>
+        </div>
+        <div class="display-6 fw-bold text-dark mb-1">🔒 {{ wallet.reserved_balance }}</div>
+        <span class="text-muted small">Held for scheduled sessions</span>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card p-3 border-0 shadow-sm h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-semibold">Completed Swaps</span>
+          <div class="avatar-circle bg-primary-subtle text-primary" style="width: 36px; height: 36px;">
+            <i class="bi bi-arrow-repeat fs-5"></i>
+          </div>
+        </div>
+        <div class="display-6 fw-bold text-primary mb-1">{{ current_user.completed_sessions_count }}</div>
+        <a href="{{ url_for('bookings.index') }}" class="text-decoration-none small text-muted">
+          All Sessions <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card p-3 border-0 shadow-sm h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-semibold">Teacher Rating</span>
+          <div class="avatar-circle bg-warning-subtle text-warning" style="width: 36px; height: 36px;">
+            <i class="bi bi-star-fill fs-5"></i>
+          </div>
+        </div>
+        <div class="display-6 fw-bold text-dark mb-1">⭐ {{ current_user.average_rating }}</div>
+        <span class="text-muted small">{{ current_user.review_count }} community reviews</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Requests Action Box -->
+  {% if pending_incoming %}
+    <div class="card border-warning border-2 p-4 shadow-sm mb-4 bg-warning bg-opacity-10">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0 text-dark">
+          <i class="bi bi-bell-fill text-warning me-2"></i> Swap Requests Awaiting Your Response ({{ pending_incoming|length }})
+        </h5>
+        <span class="badge bg-warning text-dark">Action Needed</span>
+      </div>
+
+      <div class="d-flex flex-column gap-3">
+        {% for req in pending_incoming %}
+          <div class="p-3 bg-white rounded-3 shadow-sm d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+              <div class="fw-bold fs-6">{{ req.learner.full_name }} wants to learn <u>{{ req.skill.name }}</u></div>
+              <div class="text-muted small">
+                Proposed: <strong>{{ req.start_utc.strftime('%b %d, %Y at %H:%M UTC') }}</strong> ({{ req.duration_min }} mins • +{{ req.credits }} Cr)
+              </div>
+              {% if req.notes %}
+                <div class="small text-muted mt-1 fst-italic">"{{ req.notes }}"</div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+              <form method="POST" action="{{ url_for('bookings.accept', booking_id=req.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">
+                  <i class="bi bi-check-lg me-1"></i> Accept & Secure Credits
+                </button>
+              </form>
+              <form method="POST" action="{{ url_for('bookings.reject', booking_id=req.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                  Decline
+                </button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="row g-4 mb-4">
+    <!-- Upcoming Confirmed Sessions -->
+    <div class="col-lg-7">
+      <div class="card h-100 p-4 border-0 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">
+            <i class="bi bi-camera-video me-2 text-primary"></i> Upcoming Live Sessions
+          </h5>
+          <a href="{{ url_for('bookings.index') }}" class="text-decoration-none small text-primary fw-semibold">View All</a>
+        </div>
+
+        {% if upcoming_bookings %}
+          <div class="d-flex flex-column gap-3">
+            {% for booking in upcoming_bookings %}
+              <div class="p-3 bg-light rounded-3 border d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                  <span class="badge {{ 'bg-success' if booking.teacher_id == current_user.id else 'bg-primary' }} mb-1">
+                    {{ 'Teaching' if booking.teacher_id == current_user.id else 'Learning' }}
+                  </span>
+                  <h6 class="fw-bold mb-1">{{ booking.skill.name }}</h6>
+                  <div class="text-muted small">
+                    With <strong>{{ booking.learner.full_name if booking.teacher_id == current_user.id else booking.teacher.full_name }}</strong>
+                    • {{ booking.duration_min }} mins
+                  </div>
+                  <div class="text-dark small fw-semibold mt-1">
+                    <i class="bi bi-clock me-1 text-primary"></i> {{ booking.start_utc.strftime('%a, %b %d at %H:%M UTC') }}
+                  </div>
+                </div>
+
+                <div class="d-flex flex-column gap-1 text-end">
+                  <a href="{{ url_for('video.room', room_id=booking.room_id) }}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-camera-video-fill me-1"></i> Enter Video Room
+                  </a>
+                  <a href="{{ url_for('bookings.detail', booking_id=booking.id) }}" class="text-muted small text-decoration-none">
+                    Session Details & Notes
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-calendar-check fs-2 d-block mb-2 text-secondary opacity-50"></i>
+            No upcoming sessions scheduled right now.
+            <div class="mt-2">
+              <a href="{{ url_for('skills.index') }}" class="btn btn-outline-primary btn-sm rounded-pill">
+                Explore Skills to Book
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Active AI Roadmaps -->
+    <div class="col-lg-5">
+      <div class="card h-100 p-4 border-0 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">
+            <i class="bi bi-signpost-split me-2 text-info"></i> Learning Roadmaps
+          </h5>
+          <a href="{{ url_for('ai.roadmap_index') }}" class="text-decoration-none small text-primary fw-semibold">
+            + New
+          </a>
+        </div>
+
+        {% if active_roadmaps %}
+          <div class="d-flex flex-column gap-3">
+            {% for rm in active_roadmaps %}
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <h6 class="fw-bold mb-0">
+                    <a href="{{ url_for('ai.roadmap_detail', roadmap_id=rm.id) }}" class="text-decoration-none text-dark">
+                      {{ rm.skill_title }}
+                    </a>
+                  </h6>
+                  <span class="badge bg-secondary-subtle text-secondary small">{{ rm.target_level }}</span>
+                </div>
+                <div class="text-muted small mb-2">{{ rm.summary[:70] }}...</div>
+
+                <div class="d-flex align-items-center justify-content-between small text-muted mb-1">
+                  <span>Milestone Progress</span>
+                  <span class="fw-bold text-dark">{{ rm.completion_percentage }}%</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: {{ rm.completion_percentage }}%;"></div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-mortarboard fs-2 d-block mb-2 text-secondary opacity-50"></i>
+            No roadmaps generated yet.
+            <div class="mt-2">
+              <a href="{{ url_for('ai.roadmap_index') }}" class="btn btn-outline-info btn-sm rounded-pill">
+                Create AI Curriculum
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Smart Matchmaker Section -->
+  <div class="card p-4 border-0 shadow-sm mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="fw-bold mb-1">
+          <i class="bi bi-bullseye text-warning me-2"></i> AI Recommended Matches For You
+        </h5>
+        <p class="text-muted small mb-0">Based on your learning wants, rating complementarity, and direct reciprocal swap potential</p>
+      </div>
+      <a href="{{ url_for('ai.matching') }}" class="btn btn-outline-primary btn-sm rounded-pill">
+        View All Matches
+      </a>
+    </div>
+
+    {% if recommended_matches %}
+      <div class="row g-3">
+        {% for match in recommended_matches %}
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 p-3 bg-light border card-hover">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-primary text-white">{{ match.score }}% Match</span>
+                {% if match.has_reciprocal %}
+                  <span class="badge bg-success" title="Reciprocal match!">⚡ Swap Fit</span>
+                {% endif %}
+              </div>
+
+              <h6 class="fw-bold mb-1">{{ match.skill.name }}</h6>
+              <div class="small text-muted mb-2">Taught by <strong>{{ match.teacher.full_name }}</strong></div>
+
+              <p class="text-muted small mb-3 flex-grow-1" style="font-size: 0.8rem;">
+                {{ match.explanation }}
+              </p>
+
+              <a href="{{ url_for('bookings.new', user_skill_id=match.user_skill.id) }}" class="btn btn-primary btn-sm rounded-pill w-100">
+                Request Session ({{ match.user_skill.credit_cost }} Cr)
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="p-4 text-center text-muted">
+        <p class="mb-2">Add skills to your <strong>Learning Wants</strong> on your profile to see personalized AI matches!</p>
+        <a href="{{ url_for('skills.new') }}" class="btn btn-outline-primary btn-sm rounded-pill">
+          List Skills You Want to Learn
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

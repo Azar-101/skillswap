@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5">
+  <div class="my-4">
+    <div class="display-1 fw-bold text-danger mb-2">500</div>
+    <h2 class="fw-bold mb-3">Something Went Wrong</h2>
+    <p class="text-muted lead max-w-md mx-auto mb-4">
+      An unexpected server condition occurred. Our system administrators have been notified.
+    </p>
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary px-4 py-2">
+      <i class="bi bi-house me-1"></i> Return to Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}

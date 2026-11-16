@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Live Video Room — {{ booking.skill.name }} — SkillSwap{% endblock %}
+
+{% block extra_css %}
+<style>
+  #jitsi-container {
+    height: 600px;
+    width: 100%;
+    background: #0f172a;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-2">
+  <!-- Top Session Bar -->
+  <div class="card p-3 border-0 shadow-sm mb-3">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <span class="badge bg-danger rounded-pill px-3 py-2 animate-pulse">
+          <i class="bi bi-record-circle me-1"></i> LIVE SESSION
+        </span>
+        <div>
+          <h5 class="fw-bold mb-0">{{ booking.skill.name }}</h5>
+          <div class="text-muted small">
+            Learner: <strong>{{ booking.learner.full_name }}</strong> • Teacher: <strong>{{ booking.teacher.full_name }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Countdown Timer -->
+      <div class="d-flex align-items-center gap-2 bg-light px-3 py-2 rounded-pill border">
+        <i class="bi bi-stopwatch text-primary fs-5"></i>
+        <span class="fw-bold small text-dark" id="sessionTimer">{{ booking.duration_min }}:00 Remaining</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex align-items-center gap-2">
+        <form method="POST" action="{{ url_for('bookings.confirm', booking_id=booking.id) }}" onsubmit="return confirm('Complete session now? Escrow credits will transfer to the teacher.');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 fw-bold">
+            <i class="bi bi-check2-circle me-1"></i> Finish & Transfer Credits
+          </button>
+        </form>
+
+        <a href="{{ url_for('bookings.detail', booking_id=booking.id) }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+          Back to Details
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Jitsi Video Screen -->
+    <div class="col-lg-9">
+      <div id="jitsi-container" class="position-relative shadow">
+        <div id="jitsi-placeholder" class="text-white text-center p-5 d-flex flex-column align-items-center justify-content-center h-100">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <h5 class="fw-bold">Connecting to SkillSwap Secure Room...</h5>
+          <p class="text-secondary small mb-3">Room ID: <code>{{ room_name }}</code></p>
+          <a href="https://{{ jitsi_domain }}/{{ room_name }}" target="_blank" class="btn btn-outline-light btn-sm rounded-pill">
+            <i class="bi bi-box-arrow-up-right me-1"></i> Open Direct External Window
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Session Notepad / Agenda -->
+    <div class="col-lg-3">
+      <div class="card h-100 p-3 border-0 shadow-sm d-flex flex-column">
+        <h6 class="fw-bold mb-2">
+          <i class="bi bi-journal-text text-primary me-1"></i> Session Notepad
+        </h6>
+        <p class="text-muted small mb-2">Jot down key takeaways, code links, or discussion notes during your swap:</p>
+
+        <textarea id="liveNotes" class="form-control flex-grow-1 border-light-subtle bg-light small mb-3" rows="14" placeholder="1. What was covered today...
+2. Next steps to practice...
+3. Helpful links or resources..."></textarea>
+
+        <div class="p-2 bg-light rounded text-center small text-muted">
+          <i class="bi bi-shield-check text-success me-1"></i> Escrow: <strong>{{ booking.credits }} Credits</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ jitsi_script }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const domain = "{{ jitsi_domain }}";
+    const roomName = "{{ room_name }}";
+    const options = {
+      roomName: roomName,
+      width: "100%",
+      height: 600,
+      parentNode: document.querySelector('#jitsi-container'),
+      userInfo: {
+        displayName: "{{ current_user.full_name }}"
+      },
+      configOverwrite: {
+        startWithAudioMuted: false,
+        startWithVideoMuted: false,
+        prejoinPageEnabled: false
+      },
+      interfaceConfigOverwrite: {
+        TOOLBAR_BUTTONS: [
+          'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+          'fodeviceselection', 'hangup', 'chat', 'raisehand',
+          'videoquality', 'tileview'
+        ]
+      }
+    };
+
+    try {
+      if (typeof JitsiMeetExternalAPI !== "undefined") {
+        document.getElementById("jitsi-placeholder").style.display = "none";
+        const api = new JitsiMeetExternalAPI(domain, options);
+      } else {
+        console.warn("Jitsi Meet external API unavailable, showing fallback.");
+      }
+    } catch (e) {
+      console.warn("Could not load Jitsi API:", e);
+    }
+
+    // Local Storage for Session Notes
+    const notesKey = `skillswap_notes_{{ booking.id }}`;
+    const notesArea = document.getElementById("liveNotes");
+    notesArea.value = localStorage.getItem(notesKey) || "";
+    notesArea.addEventListener("input", function() {
+      localStorage.setItem(notesKey, this.value);
+    });
+  });
+</script>
+{% endblock %}

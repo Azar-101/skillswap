@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}All Swap Sessions — Admin — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">Platform Swap Sessions</h3>
+      <span class="text-muted small">Monitor real-time session progress and credit reservations</span>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+      Back to Dashboard
+    </a>
+  </div>
+
+  <div class="card p-4 border-0 shadow-sm">
+    <div class="d-flex gap-2 mb-3">
+      <a href="{{ url_for('admin.bookings') }}" class="btn btn-sm {{ 'btn-primary' if not current_status else 'btn-light border' }} rounded-pill">All</a>
+      <a href="{{ url_for('admin.bookings', status='scheduled') }}" class="btn btn-sm {{ 'btn-primary' if current_status == 'scheduled' else 'btn-light border' }} rounded-pill">Scheduled</a>
+      <a href="{{ url_for('admin.bookings', status='completed') }}" class="btn btn-sm {{ 'btn-primary' if current_status == 'completed' else 'btn-light border' }} rounded-pill">Completed</a>
+      <a href="{{ url_for('admin.bookings', status='disputed') }}" class="btn btn-sm {{ 'btn-primary' if current_status == 'disputed' else 'btn-light border' }} rounded-pill">Disputed</a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Skill</th>
+            <th>Learner</th>
+            <th>Teacher</th>
+            <th>Scheduled Time</th>
+            <th>Duration</th>
+            <th>Credits</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bookings %}
+            <tr>
+              <td>#{{ b.id }}</td>
+              <td><strong>{{ b.skill.name }}</strong></td>
+              <td>{{ b.learner.full_name }}</td>
+              <td>{{ b.teacher.full_name }}</td>
+              <td class="text-muted">{{ b.start_utc.strftime('%b %d, %H:%M') }}</td>
+              <td>{{ b.duration_min }}m</td>
+              <td class="fw-bold text-success">⚡ {{ b.credits }}</td>
+              <td>
+                <span class="badge 
+                  {% if b.status == 'completed' %}bg-success
+                  {% elif b.status == 'scheduled' %}bg-primary
+                  {% elif b.status == 'disputed' %}bg-danger
+                  {% else %}bg-secondary{% endif %}">
+                  {{ b.status }}
+                </span>
+              </td>
+              <td class="text-end">
+                <a href="{{ url_for('bookings.detail', booking_id=b.id) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                  Inspect
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

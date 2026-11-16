@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}SwapBot — AI Learning Assistant — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm">
+        <!-- Header -->
+        <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-white rounded-top-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="avatar-circle bg-primary text-white" style="width: 44px; height: 44px;">
+              <i class="bi bi-robot fs-4"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0">SwapBot AI Assistant</h5>
+              <div class="small text-muted"><span class="badge bg-success-subtle text-success p-1">● Online</span> Your 24/7 Learning Partner</div>
+            </div>
+          </div>
+
+          <form method="POST" action="{{ url_for('ai.assistant_clear') }}" onsubmit="return confirm('Clear chat history?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill">
+              <i class="bi bi-trash me-1"></i> Clear Chat
+            </button>
+          </form>
+        </div>
+
+        <!-- Chat History Stream -->
+        <div class="chat-container" id="chatStream">
+          <!-- Initial Welcome Message -->
+          <div class="chat-bubble chat-assistant">
+            <div class="fw-bold small text-primary mb-1">SwapBot</div>
+            <div>
+              Hello <strong>{{ current_user.full_name }}</strong>! 👋 I'm your AI Learning Assistant. 
+              Ask me anything about learning new skills, how SkillSwap credits work, interview practice, or session preparation!
+            </div>
+          </div>
+
+          {% for msg in conversation.messages %}
+            <div class="chat-bubble {{ 'chat-user' if msg.role == 'user' else 'chat-assistant' }}">
+              <div class="fw-bold small {{ 'text-light' if msg.role == 'user' else 'text-primary' }} mb-1">
+                {{ current_user.full_name if msg.role == 'user' else 'SwapBot' }}
+              </div>
+              <div style="white-space: pre-line;">{{ msg.content }}</div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Quick Suggestions Chips -->
+        <div class="p-2 bg-light border-top d-flex gap-2 overflow-x-auto small text-nowrap">
+          <button class="btn btn-light btn-sm border rounded-pill suggestion-btn" data-text="How does the time-based credit system work?">
+            ⚡ How do credits work?
+          </button>
+          <button class="btn btn-light btn-sm border rounded-pill suggestion-btn" data-text="Give me 4 tips to prepare for my first peer teaching session.">
+            🎯 First teaching tips
+          </button>
+          <button class="btn btn-light btn-sm border rounded-pill suggestion-btn" data-text="What are high-demand skills I can learn on SkillSwap?">
+            💡 High demand skills
+          </button>
+          <button class="btn btn-light btn-sm border rounded-pill suggestion-btn" data-text="How can I create an AI roadmap for Full-Stack Python?">
+            🗺️ Make a roadmap
+          </button>
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="p-3 bg-white border-top rounded-bottom-3">
+          <form method="POST" action="{{ url_for('ai.assistant') }}" id="chatForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="input-group">
+              <input type="text" name="message" id="messageInput" class="form-control border-light-subtle py-2 px-3" 
+                placeholder="Ask SwapBot anything about skills, learning, or swap sessions..." required autocomplete="off">
+              <button class="btn btn-primary px-4 fw-semibold" type="submit">
+                <i class="bi bi-send-fill me-1"></i> Send
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const chatStream = document.getElementById("chatStream");
+    chatStream.scrollTop = chatStream.scrollHeight;
+
+    const input = document.getElementById("messageInput");
+    document.querySelectorAll(".suggestion-btn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        input.value = this.getAttribute("data-text");
+        document.getElementById("chatForm").submit();
+      });
+    });
+  });
+</script>
+{% endblock %}

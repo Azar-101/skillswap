@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}My Wallet & Credit Ledger — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">Time Credit Wallet</h2>
+      <p class="text-muted small mb-0">Manage your learning currency, escrow locks, and transparent transaction ledger.</p>
+    </div>
+    <a href="{{ url_for('skills.new') }}" class="btn btn-success rounded-pill px-4 shadow-sm fw-semibold">
+      <i class="bi bi-mortarboard me-1"></i> Teach to Earn More Credits
+    </a>
+  </div>
+
+  <!-- Balance Cards Grid -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="card p-4 border-0 shadow-sm bg-success bg-opacity-10 border border-success border-opacity-25 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-success fw-bold small text-uppercase">Spendable Credits</span>
+          <i class="bi bi-lightning-charge-fill text-success fs-4"></i>
+        </div>
+        <div class="display-5 fw-extrabold text-success mb-1">⚡ {{ wallet.available_balance }}</div>
+        <div class="small text-muted">Ready to use for booking upcoming swap sessions.</div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card p-4 border-0 shadow-sm bg-warning bg-opacity-10 border border-warning border-opacity-25 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-dark fw-bold small text-uppercase">Escrow Reserved</span>
+          <i class="bi bi-shield-lock-fill text-warning fs-4"></i>
+        </div>
+        <div class="display-5 fw-extrabold text-dark mb-1">🔒 {{ wallet.reserved_balance }}</div>
+        <div class="small text-muted">Locked safely for scheduled pending sessions.</div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card p-4 border-0 shadow-sm bg-primary bg-opacity-10 border border-primary border-opacity-25 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-primary fw-bold small text-uppercase">Total Wealth</span>
+          <i class="bi bi-bank fs-4 text-primary"></i>
+        </div>
+        <div class="display-5 fw-extrabold text-primary mb-1">{{ wallet.total_balance }}</div>
+        <div class="small text-muted">Combined available and reserved credit value.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Credit Rules Explainer -->
+  <div class="card p-4 border-0 shadow-sm mb-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-info-circle text-primary me-2"></i> How Time-Based Credits Work</h5>
+    <div class="row g-3 text-center">
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-light rounded-3 border">
+          <div class="fw-bold fs-5 text-primary">30 Minutes</div>
+          <div class="badge bg-success-subtle text-success fs-6 mt-1">0.5 Credit</div>
+          <div class="small text-muted mt-2">Quick Q&A, code review, or pronunciation check</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-light rounded-3 border">
+          <div class="fw-bold fs-5 text-primary">60 Minutes</div>
+          <div class="badge bg-success-subtle text-success fs-6 mt-1">1.0 Credit</div>
+          <div class="small text-muted mt-2">Standard deep dive, lesson walkthrough, or project build</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-light rounded-3 border">
+          <div class="fw-bold fs-5 text-primary">90 Minutes</div>
+          <div class="badge bg-success-subtle text-success fs-6 mt-1">1.5 Credits</div>
+          <div class="small text-muted mt-2">Extended lab session, full workshop, or system design</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-light rounded-3 border">
+          <div class="fw-bold fs-5 text-primary">120 Minutes</div>
+          <div class="badge bg-success-subtle text-success fs-6 mt-1">2.0 Credits</div>
+          <div class="small text-muted mt-2">Comprehensive boot-camp module or pair programming</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction History Table -->
+  <div class="card p-4 border-0 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-secondary me-2"></i> Transaction History</h5>
+      <span class="badge bg-light text-secondary border">{{ transactions|length }} Records</span>
+    </div>
+
+    {% if transactions %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small">
+            <tr>
+              <th>Date & Time</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Session ID</th>
+              <th class="text-end">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tx in transactions %}
+              <tr>
+                <td class="small text-muted">{{ tx.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+                <td>
+                  {% if tx.type == 'bonus' %}
+                    <span class="badge bg-info-subtle text-info">Platform Bonus</span>
+                  {% elif tx.type == 'transfer_in' %}
+                    <span class="badge bg-success-subtle text-success">Teaching Earned</span>
+                  {% elif tx.type == 'transfer_out' %}
+                    <span class="badge bg-primary-subtle text-primary">Learning Spent</span>
+                  {% elif tx.type == 'reserve' %}
+                    <span class="badge bg-warning-subtle text-warning text-dark">Escrow Hold</span>
+                  {% elif tx.type == 'release' %}
+                    <span class="badge bg-secondary-subtle text-secondary">Escrow Released</span>
+                  {% else %}
+                    <span class="badge bg-light text-dark">{{ tx.type }}</span>
+                  {% endif %}
+                </td>
+                <td class="small">{{ tx.description }}</td>
+                <td class="small">
+                  {% if tx.booking_id %}
+                    <a href="{{ url_for('bookings.detail', booking_id=tx.booking_id) }}" class="text-decoration-none">
+                      #{{ tx.booking_id }}
+                    </a>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td class="text-end fw-bold {% if tx.amount > 0 %}text-success{% else %}text-secondary{% endif %}">
+                  {% if tx.amount > 0 %}+{% endif %}{{ tx.amount }} Cr
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-4 text-muted small">
+        No wallet transactions recorded yet.
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

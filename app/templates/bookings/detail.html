@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Session #{{ booking.id }}: {{ booking.skill.name }} — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <div class="card p-4 p-md-5 border-0 shadow-sm mb-4">
+        <!-- Header -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 border-bottom pb-3 gap-2">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <h3 class="fw-bold mb-0">{{ booking.skill.name }}</h3>
+              <span class="badge 
+                {% if booking.status == 'completed' %}bg-success
+                {% elif booking.status == 'scheduled' %}bg-primary
+                {% elif booking.status == 'pending' %}bg-warning text-dark
+                {% elif booking.status == 'in_progress' %}bg-info text-dark
+                {% elif booking.status == 'disputed' %}bg-danger
+                {% else %}bg-secondary{% endif %} rounded-pill fs-6 px-3">
+                {{ booking.status.title() }}
+              </span>
+            </div>
+            <div class="text-muted small">Session #{{ booking.id }} • Created {{ booking.created_at.strftime('%b %d, %Y') }}</div>
+          </div>
+
+          <div class="text-end">
+            <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+              ⚡ {{ booking.credits }} Credits ({{ booking.duration_min }} mins)
+            </span>
+          </div>
+        </div>
+
+        <!-- Participants Row -->
+        <div class="row g-4 mb-4">
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <span class="badge bg-primary-subtle text-primary mb-2">Learner</span>
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-circle" style="width: 44px; height: 44px;">
+                  {{ booking.learner.username[:2].upper() }}
+                </div>
+                <div>
+                  <h6 class="fw-bold mb-0">
+                    <a href="{{ url_for('auth.profile', username=booking.learner.username) }}" class="text-decoration-none text-dark">
+                      {{ booking.learner.full_name }}
+                    </a>
+                  </h6>
+                  <div class="small text-muted">@{{ booking.learner.username }}</div>
+                  <div class="small text-muted">{{ booking.learner.headline }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <span class="badge bg-success-subtle text-success mb-2">Teacher</span>
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-circle" style="width: 44px; height: 44px;">
+                  {{ booking.teacher.username[:2].upper() }}
+                </div>
+                <div>
+                  <h6 class="fw-bold mb-0">
+                    <a href="{{ url_for('auth.profile', username=booking.teacher.username) }}" class="text-decoration-none text-dark">
+                      {{ booking.teacher.full_name }}
+                    </a>
+                  </h6>
+                  <div class="small text-muted">@{{ booking.teacher.username }}</div>
+                  <div class="small text-warning"><i class="bi bi-star-fill"></i> {{ booking.teacher.average_rating }} ({{ booking.teacher.review_count }} reviews)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session Schedule & Notes -->
+        <div class="p-3 bg-light rounded-3 border mb-4">
+          <div class="row gy-2">
+            <div class="col-md-6">
+              <span class="text-muted small d-block">Scheduled Start (UTC)</span>
+              <strong><i class="bi bi-calendar3 me-1 text-primary"></i> {{ booking.start_utc.strftime('%A, %b %d, %Y at %H:%M UTC') }}</strong>
+            </div>
+            <div class="col-md-6">
+              <span class="text-muted small d-block">Duration & Credits</span>
+              <strong><i class="bi bi-clock me-1 text-primary"></i> {{ booking.duration_min }} Minutes • ⚡ {{ booking.credits }} Credits</strong>
+            </div>
+          </div>
+
+          {% if booking.notes %}
+            <div class="mt-3 pt-2 border-top">
+              <span class="text-muted small d-block mb-1">Learner's Notes:</span>
+              <p class="small text-dark mb-0 fst-italic">"{{ booking.notes }}"</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- State-Specific Action Bars -->
+        {% if booking.status == 'pending' %}
+          <div class="p-4 bg-warning bg-opacity-10 rounded-3 border border-warning mb-4">
+            {% if current_user.id == booking.teacher_id %}
+              <h5 class="fw-bold mb-2">Action Required: Respond to Swap Request</h5>
+              <p class="text-muted small mb-3">
+                Review the proposed time slot. Accepting secures {{ booking.credits }} credits from {{ booking.learner.full_name }}'s wallet into escrow.
+              </p>
+              <div class="d-flex gap-2">
+                <form method="POST" action="{{ url_for('bookings.accept', booking_id=booking.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">
+                    <i class="bi bi-check-lg me-1"></i> Accept Swap Request
+                  </button>
+                </form>
+                <form method="POST" action="{{ url_for('bookings.reject', booking_id=booking.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-semibold">
+                    Decline Request
+                  </button>
+                </form>
+              </div>
+            {% else %}
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 class="fw-bold mb-1">Awaiting Teacher Confirmation</h6>
+                  <p class="text-muted small mb-0">We notified {{ booking.teacher.full_name }}. Credits are not yet reserved.</p>
+                </div>
+                <form method="POST" action="{{ url_for('bookings.cancel', booking_id=booking.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill">Cancel Request</button>
+                </form>
+              </div>
+            {% endif %}
+          </div>
+        {% elif booking.status in ('scheduled', 'in_progress') %}
+          <div class="p-4 bg-primary bg-opacity-10 rounded-3 border border-primary mb-4 text-center">
+            <h5 class="fw-bold mb-2 text-primary">Your Session is Scheduled! 🚀</h5>
+            <p class="text-muted small mb-3">
+              Credits ({{ booking.credits }} Cr) are securely held in escrow. Join the integrated video room when you're ready!
+            </p>
+            <div class="d-flex justify-content-center flex-wrap gap-3">
+              <a href="{{ url_for('video.room', room_id=booking.room_id) }}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm fw-bold">
+                <i class="bi bi-camera-video-fill me-2"></i> Enter Live Video Room
+              </a>
+              <form method="POST" action="{{ url_for('bookings.confirm', booking_id=booking.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-success btn-lg rounded-pill px-4 fw-bold">
+                  <i class="bi bi-check2-circle me-1"></i> Confirm Session Completed
+                </button>
+              </form>
+            </div>
+          </div>
+        {% elif booking.status == 'completed' %}
+          <div class="p-4 bg-success bg-opacity-10 rounded-3 border border-success mb-4 text-center">
+            <i class="bi bi-check-circle-fill fs-1 text-success d-block mb-2"></i>
+            <h5 class="fw-bold text-success mb-1">Session Successfully Completed!</h5>
+            <p class="text-muted small mb-3">
+              Escrow credits were transferred to {{ booking.teacher.full_name }}'s wallet.
+            </p>
+            {% if not booking.reviews %}
+              <a href="{{ url_for('reviews.new', booking_id=booking.id) }}" class="btn btn-warning rounded-pill px-4 text-dark fw-bold">
+                <i class="bi bi-star-fill me-1"></i> Rate & Review Mentor
+              </a>
+            {% else %}
+              <span class="badge bg-success-subtle text-success fs-6 px-3 py-2">Review Submitted ⭐</span>
+            {% endif %}
+          </div>
+        {% elif booking.status == 'disputed' %}
+          <div class="p-4 bg-danger bg-opacity-10 rounded-3 border border-danger mb-4">
+            <h5 class="fw-bold text-danger mb-1"><i class="bi bi-shield-exclamation me-2"></i> Dispute Under Review</h5>
+            <p class="text-muted small mb-2">
+              Reason: {{ booking.dispute.reason if booking.dispute else 'Dispute raised.' }}
+            </p>
+            <div class="small text-muted">
+              Platform administrator is mediating. Escrow remains safely locked until resolved.
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Cancellation & Dispute Footer Options -->
+        {% if booking.status in ('scheduled', 'in_progress') %}
+          <div class="d-flex justify-content-between align-items-center pt-3 border-top small">
+            <form method="POST" action="{{ url_for('bookings.cancel', booking_id=booking.id) }}" onsubmit="return confirm('Cancel this session and release escrow?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-link text-danger p-0 text-decoration-none">
+                <i class="bi bi-x-circle me-1"></i> Cancel Session
+              </button>
+            </form>
+
+            <button type="button" class="btn btn-link text-secondary p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#disputeModal">
+              <i class="bi bi-flag me-1"></i> Report an Issue / Raise Dispute
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dispute Modal -->
+<div class="modal fade" id="disputeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon me-2"></i> Raise Session Dispute</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('bookings.dispute', booking_id=booking.id) }}">
+        {{ dispute_form.hidden_tag() }}
+        <div class="modal-body p-4">
+          <p class="text-muted small mb-3">
+            If the other party did not show up, experienced severe technical problems, or refused to teach, submit a dispute. Admin will audit the session and resolve credits.
+          </p>
+          <div class="mb-3">
+            {{ dispute_form.reason.label(class="form-label fw-semibold small") }}
+            {{ dispute_form.reason(class="form-control", rows=4) }}
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+          {{ dispute_form.submit(class="btn btn-danger rounded-pill") }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

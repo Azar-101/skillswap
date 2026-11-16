@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}AI Provider Settings — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card p-4 p-md-5 border-0 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+          <div>
+            <h3 class="fw-bold mb-1">AI Provider & Intelligence Settings</h3>
+            <p class="text-muted small mb-0">Configure your AI engine for roadmaps, skill assessments, and SwapBot assistant.</p>
+          </div>
+          <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            Dashboard
+          </a>
+        </div>
+
+        <!-- Provider Status Overview -->
+        <div class="card p-3 bg-light border mb-4">
+          <h6 class="fw-bold mb-2 text-dark small text-uppercase">Environment Provider Detection</h6>
+          <div class="d-flex flex-column gap-2 small">
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Built-in Domain Generator (Offline / Demo):</span>
+              <span class="badge bg-success">● Active & Ready (100% Free)</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Groq Hosted Free Endpoint:</span>
+              <span class="badge {{ 'bg-success' if config.GROQ_API_KEY else 'bg-secondary' }}">
+                {{ '● Configured' if config.GROQ_API_KEY else 'Not Set' }}
+              </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span>OpenAI API Integration:</span>
+              <span class="badge {{ 'bg-success' if config.OPENAI_API_KEY else 'bg-secondary' }}">
+                {{ '● Configured' if config.OPENAI_API_KEY else 'Not Set' }}
+              </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Local Ollama Server:</span>
+              <span class="badge bg-info-subtle text-info">{{ config.OLLAMA_BASE_URL }}</span>
+            </div>
+          </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('settings.ai_settings') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Select Active AI Provider Mode</label>
+            <select name="free_provider" class="form-select">
+              <option value="mock" {% if prefs.free_provider == 'mock' %}selected{% endif %}>
+                Built-in Offline Engine (Recommended for College Viva / Local Testing)
+              </option>
+              <option value="groq" {% if prefs.free_provider == 'groq' %}selected{% endif %}>
+                Groq Free Tier (Llama 3.3 70B via Groq API)
+              </option>
+              <option value="openai" {% if prefs.free_provider == 'openai' %}selected{% endif %}>
+                OpenAI GPT-4o-mini
+              </option>
+              <option value="ollama" {% if prefs.free_provider == 'ollama' %}selected{% endif %}>
+                Local Ollama Server
+              </option>
+            </select>
+            <div class="form-text small">
+              The built-in engine guarantees 100% test reliability with zero external latency or API quota issues during exams.
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold small">Custom Model Name Override (Optional)</label>
+            <input type="text" name="model_override" value="{{ prefs.model_override or '' }}" class="form-control" placeholder="e.g. llama-3.3-70b-versatile, gpt-4o-mini">
+            <div class="form-text small">Leave blank to use system defaults.</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill fw-semibold shadow-sm">
+            Save AI Preferences
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}User Management — Admin — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">User Directory & Status Management</h3>
+      <span class="text-muted small">Search users, view credits, and toggle active/suspended statuses</span>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+      Back to Admin Dashboard
+    </a>
+  </div>
+
+  <div class="card p-4 border-0 shadow-sm">
+    <!-- Search Form -->
+    <form method="GET" action="{{ url_for('admin.users') }}" class="mb-4">
+      <div class="input-group">
+        <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search by username, full name, or email...">
+        <button type="submit" class="btn btn-primary px-4">Search</button>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small">
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Balance</th>
+            <th>Rating</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+            <tr>
+              <td>
+                <strong>{{ u.full_name }}</strong><br>
+                <a href="{{ url_for('auth.profile', username=u.username) }}" class="small text-muted text-decoration-none">
+                  @{{ u.username }}
+                </a>
+              </td>
+              <td class="small">{{ u.email }}</td>
+              <td>
+                <span class="badge {{ 'bg-danger' if u.role == 'admin' else 'bg-secondary-subtle text-secondary' }}">
+                  {{ u.role }}
+                </span>
+              </td>
+              <td class="fw-bold small text-success">
+                ⚡ {{ u.wallet.available_balance if u.wallet else '0.00' }} Cr
+              </td>
+              <td class="small text-warning">
+                <i class="bi bi-star-fill"></i> {{ u.average_rating }}
+              </td>
+              <td>
+                <span class="badge {{ 'bg-success' if u.status == 'active' else 'bg-danger' }}">
+                  {{ u.status }}
+                </span>
+              </td>
+              <td class="text-end">
+                {% if u.id != current_user.id %}
+                  <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if u.status == 'active' else 'btn-outline-success' }} rounded-pill">
+                      {{ 'Suspend' if u.status == 'active' else 'Reactivate' }}
+                    </button>
+                  </form>
+                {% else %}
+                  <span class="badge bg-light text-muted small">Current Admin</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

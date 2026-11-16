@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile — SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+      <div class="card p-4 p-md-5 border-0 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+          <h3 class="fw-bold mb-0">Edit Your Profile</h3>
+          <a href="{{ url_for('auth.profile', username=current_user.username) }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            Cancel
+          </a>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.edit_profile') }}">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ form.full_name.label(class="form-label fw-semibold small") }}
+            {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+            {% for error in form.full_name.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.headline.label(class="form-label fw-semibold small") }}
+            {{ form.headline(class="form-control" + (" is-invalid" if form.headline.errors else ""), placeholder="e.g. Senior CS Student | UI/UX Enthusiast") }}
+            {% for error in form.headline.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              {{ form.location.label(class="form-label fw-semibold small") }}
+              {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else ""), placeholder="e.g. New York, NY / Remote") }}
+              {% for error in form.location.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-6">
+              {{ form.timezone.label(class="form-label fw-semibold small") }}
+              {{ form.timezone(class="form-control" + (" is-invalid" if form.timezone.errors else ""), placeholder="e.g. UTC, EST, IST") }}
+              {% for error in form.timezone.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="mb-4">
+            {{ form.bio.label(class="form-label fw-semibold small") }}
+            {{ form.bio(class="form-control" + (" is-invalid" if form.bio.errors else ""), rows=4, placeholder="Introduce yourself, your academic background, experience, and why you love exchanging skills...") }}
+            {% for error in form.bio.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          {{ form.submit(class="btn btn-primary px-4 py-2 fw-semibold rounded-pill") }}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
